@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國術專家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8f8f8;
+        }
+        
+        .slideshow-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            /* A4 直式比例 (210:297) */
+            aspect-ratio: 210/297;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+        }
+        
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.05s linear;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .slide.active {
+            opacity: 1;
+        }
+        
+        .prize-item {
+            width: 90%;
+            height: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: white;
+            padding: 10px;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .prize-item img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .restart-btn {
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+        
+        .restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .restart-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex flex-col items-center justify-center p-4">
+        <div class="max-w-lg w-full">
+            <h1 class="text-3xl font-bold text-center mb-6 text-indigo-800">國術專家</h1>
+            
+            <div class="slideshow-container cursor-pointer" id="slideshow">
+                <!-- 圖片將在這裡動態生成 -->
+            </div>
+            
+            <div class="mt-6 flex justify-center">
+                <button id="restartBtn" class="restart-btn text-white font-medium py-3 px-8 rounded-full shadow-lg text-xl hidden">
+                    再一次
+                </button>
+            </div>
+            
+            <p class="text-center mt-4 text-gray-600">點擊圖片停止輪播</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slideshow = document.getElementById('slideshow');
+            const restartBtn = document.getElementById('restartBtn');
+            let currentSlide = 0;
+            let isPlaying = true;
+            let slideInterval;
+            const slides = [];
+            
+            // 圖片資料 - 使用GitHub相對路徑
+            const images = [
+                { imageUrl: 'images/image1.jpg', color: '#FFD700' },
+                { imageUrl: 'images/image2.jpg', color: '#FF6B6B' },
+                { imageUrl: 'images/image3.jpg', color: '#4ECDC4' },
+                { imageUrl: 'images/image4.jpg', color: '#FFD166' },
+                { imageUrl: 'images/image5.jpg', color: '#06D6A0' },
+                { imageUrl: 'images/image6.jpg', color: '#118AB2' },
+                { imageUrl: 'images/image7.jpg', color: '#073B4C' },
+                { imageUrl: 'images/image8.jpg', color: '#8338EC' },
+                { imageUrl: 'images/image9.jpg', color: '#3A86FF' },
+                { imageUrl: 'images/image10.jpg', color: '#FB5607' },
+                { imageUrl: 'images/image11.jpg', color: '#FFBE0B' },
+                { imageUrl: 'images/image12.jpg', color: '#FF006E' }
+            ];
+            
+            // 創建所有圖片幻燈片
+            for (let i = 0; i < images.length; i++) {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                
+                const image = images[i];
+                slide.innerHTML = `
+                    <div class="prize-item" style="border: 4px solid ${image.color}">
+                        <img src="${image.imageUrl}" alt="圖片 ${i+1}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                    </div>
+                `;
+                
+                slideshow.appendChild(slide);
+                slides.push(slide);
+            }
+            
+            // 開始輪播 - 超快速度
+            function startSlideshow() {
+                isPlaying = true;
+                restartBtn.classList.add('hidden');
+                slides[currentSlide].classList.add('active');
+                
+                // 設定為非常快的速度 (50毫秒切換一次)
+                slideInterval = setInterval(() => {
+                    slides[currentSlide].classList.remove('active');
+                    currentSlide = (currentSlide + 1) % slides.length;
+                    slides[currentSlide].classList.add('active');
+                }, 50); // 超快速輪播，像拉霸機
+            }
+            
+            // 停止輪播
+            function stopSlideshow() {
+                isPlaying = false;
+                clearInterval(slideInterval);
+                restartBtn.classList.remove('hidden');
+                
+                // 播放慶祝動畫
+                createConfetti();
+            }
+            
+            // 點擊幻燈片停止輪播
+            slideshow.addEventListener('click', function(e) {
+                if (isPlaying) {
+                    stopSlideshow();
+                }
+            });
+            
+            // 點擊「再一次」按鈕重新開始輪播
+            restartBtn.addEventListener('click', function() {
+                startSlideshow();
+            });
+            
+            // 創建慶祝彩帶效果
+            function createConfetti() {
+                const confettiCount = 100;
+                const colors = ['#FF6B6B', '#4ECDC4', '#FFD166', '#06D6A0', '#118AB2', '#8338EC', '#3A86FF', '#FB5607'];
+                
+                for (let i = 0; i < confettiCount; i++) {
+                    setTimeout(() => {
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti';
+                        confetti.style.left = Math.random() * 100 + '%';
+                        confetti.style.top = '-10px';
+                        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.width = Math.random() * 10 + 5 + 'px';
+                        confetti.style.height = Math.random() * 10 + 5 + 'px';
+                        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                        confetti.style.opacity = 1;
+                        
+                        slideshow.appendChild(confetti);
+                        
+                        // 動畫
+                        const animationDuration = Math.random() * 3 + 2;
+                        confetti.style.transition = `top ${animationDuration}s linear, left ${animationDuration}s ease-out, opacity ${animationDuration}s linear`;
+                        
+                        setTimeout(() => {
+                            confetti.style.top = slideshow.offsetHeight + 'px';
+                            confetti.style.left = Math.random() * 100 + '%';
+                            confetti.style.opacity = 0;
+                            
+                            // 移除元素
+                            setTimeout(() => {
+                                confetti.remove();
+                            }, animationDuration * 1000);
+                        }, 10);
+                    }, i * 20);
+                }
+            }
+            
+            // 開始輪播
+            startSlideshow();
+        });
+    </script>
+</body>
+</html>
