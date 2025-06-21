@@ -153,12 +153,12 @@
                 restartBtn.classList.add('hidden');
                 slides[currentSlide].classList.add('active');
                 
-                // 設定為非常快的速度 (50毫秒切換一次)
+                // 設定為非常快的速度 (500毫秒切換一次)
                 slideInterval = setInterval(() => {
                     slides[currentSlide].classList.remove('active');
                     currentSlide = (currentSlide + 1) % slides.length;
                     slides[currentSlide].classList.add('active');
-                }, 50); // 超快速輪播，像拉霸機
+                }, 500); // 超快速輪播，像拉霸機
             }
             
             // 停止輪播
